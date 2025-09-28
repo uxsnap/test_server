@@ -8,24 +8,19 @@ const upload = multer({ dest: "uploads/" });
 // Для JSON и text/plain
 app.use(bodyParser.json());
 app.use(bodyParser.text());
-
 // application/text
 
 app.get("/get-text", (req, res) => {
   res.type("text/plain").send("Hello from GET!");
 });
 app.post("/post-text", (req, res) => {
-  console.log(req);
-
   res.type("text/plain").send(`You sent plain text: ${req.body}`);
 });
-
 app.put("/put-text", (req, res) => {
   res.type("text/plain").send(`You sent plain text: ${req.body}`);
 });
-
 app.delete("/delete-text", (req, res) => {
-  res.type("text/plain").send(`You sent plain text: ${req.body}`);
+  res.type("text/plain").send("Hello from DELETE!");
 });
 // application/text
 
