@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const bodyParser = require("body-parser");
-const fs = require("fs");
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
@@ -10,19 +9,28 @@ const upload = multer({ dest: "uploads/" });
 app.use(bodyParser.json());
 app.use(bodyParser.text());
 
-// GET – простой текст
+// application/text
+
 app.get("/get-text", (req, res) => {
   res.type("text/plain").send("Hello from GET!");
 });
+app.post("/post-text", (req, res) => {
+  res.type("text/plain").send(`You sent plain text: ${req.body}`);
+});
+
+app.put("/put-text", (req, res) => {
+  res.type("text/plain").send(`You sent plain text: ${req.body}`);
+});
+
+app.delete("/delete-text", (req, res) => {
+  res.type("text/plain").send(`You sent plain text: ${req.body}`);
+});
+
+// application/text
 
 // POST JSON
 app.post("/post-json", (req, res) => {
   res.json({ received: req.body, status: "ok" });
-});
-
-// POST text/plain
-app.post("/post-text", (req, res) => {
-  res.type("text/plain").send(`You sent plain text: ${req.body}`);
 });
 
 // POST multipart form
