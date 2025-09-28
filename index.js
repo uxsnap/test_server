@@ -15,6 +15,8 @@ app.get("/get-text", (req, res) => {
   res.type("text/plain").send("Hello from GET!");
 });
 app.post("/post-text", (req, res) => {
+  console.log(req);
+
   res.type("text/plain").send(`You sent plain text: ${req.body}`);
 });
 
@@ -25,7 +27,6 @@ app.put("/put-text", (req, res) => {
 app.delete("/delete-text", (req, res) => {
   res.type("text/plain").send(`You sent plain text: ${req.body}`);
 });
-
 // application/text
 
 // POST JSON
