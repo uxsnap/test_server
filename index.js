@@ -8,8 +8,9 @@ const upload = multer({ dest: "uploads/" });
 // Для JSON и text/plain
 app.use(bodyParser.json());
 app.use(bodyParser.text());
-// application/text
+app.use(express.urlencoded({ extended: true }));
 
+// application/text
 app.get("/get-text", (req, res) => {
   res.type("text/plain").send("Hello from GET!");
 });
@@ -24,42 +25,27 @@ app.delete("/delete-text", (req, res) => {
 });
 // application/text
 
-// POST JSON
-app.post("/post-json", (req, res) => {
-  res.json({ received: req.body, status: "ok" });
+// form data
+app.post("/post-form", (req, res) => {
+  res.type("text/plain").send(`Form data: ${JSON.stringify(req.body)}`);
 });
 
-// POST multipart form
-app.post("/post-form", upload.none(), (req, res) => {
-  res.json({ received: req.body, status: "form received" });
+app.put("/put-form", (req, res) => {
+  res.type("text/plain").send(`Form data: ${JSON.stringify(req.body)}`);
 });
 
-// POST file upload
-app.post("/upload-file", upload.single("file"), (req, res) => {
-  res.json({
-    filename: req.file.originalname,
-    size: req.file.size,
-    mimetype: req.file.mimetype,
-  });
+app.post("/post-multipart", upload.any(), (req, res) => {
+  res
+    .type("text/plain")
+    .send(
+      `Multipart data: ${JSON.stringify(req.body)} ${JSON.stringify(req.files)}`
+    );
 });
 
-// GET file streaming
-app.get("/download-file", (req, res) => {
-  const content = "Some test file content\nLine 2\nLine 3";
-  res.setHeader("Content-Disposition", "attachment; filename=test.txt");
-  res.setHeader("Content-Type", "application/octet-stream");
-  res.send(content);
+app.put("/put-multipart", upload.any(), (req, res) => {
+  res.type("text/plain").send(`Multipart data: ${JSON.stringify(req.body)}`);
 });
-
-// PUT – update ресурс
-app.put("/update/:id", (req, res) => {
-  res.json({ id: req.params.id, new_data: req.body, status: "updated" });
-});
-
-// DELETE – удалить ресурс
-app.delete("/delete/:id", (req, res) => {
-  res.json({ id: req.params.id, status: "deleted" });
-});
+// form data
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
