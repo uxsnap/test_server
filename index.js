@@ -1,9 +1,19 @@
 const express = require("express");
 const multer = require("multer");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({
+  dest: "uploads/",
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB лимит
+  },
+});
+
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
 
 // Для JSON и text/plain
 app.use(bodyParser.json());
@@ -87,6 +97,128 @@ app.delete("/delete-json", (req, res) => {
   });
 });
 // application/json
+
+// files
+app.post("/upload-single", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      error: "No file uploaded",
+      message: "Please provide a file with key 'file'",
+    });
+  }
+
+  res.json({
+    message: "File uploaded successfully!",
+    method: "POST",
+    file: {
+      originalname: req.file.originalname,
+      filename: req.file.filename,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      path: req.file.path,
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.post("/upload-multiple", upload.array("files", 5), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({
+      error: "No files uploaded",
+      message: "Please provide files with key 'files'",
+    });
+  }
+
+  res.json({
+    message: "Files uploaded successfully!",
+    method: "POST",
+    files: req.files.map((file) => ({
+      originalname: file.originalname,
+      filename: file.filename,
+      size: file.size,
+      mimetype: file.mimetype,
+    })),
+    count: req.files.length,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Стриминг файла для скачивания
+app.get("/download-file/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  // Проверяем существование файла
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({
+      error: "File not found",
+      message: `File ${filename} does not exist`,
+    });
+  }
+
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  // Поддержка range requests для продолжения загрузки
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = end - start + 1;
+
+    const file = fs.createReadStream(filePath, { start, end });
+    const head = {
+      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+      "Accept-Ranges": "bytes",
+      "Content-Length": chunksize,
+      "Content-Type": "application/octet-stream",
+    };
+
+    res.writeHead(206, head);
+    file.pipe(res);
+  } else {
+    // Полная загрузка файла
+    const head = {
+      "Content-Length": fileSize,
+      "Content-Type": "application/octet-stream",
+      "Content-Disposition": `attachment; filename=${filename}`,
+    };
+
+    res.writeHead(200, head);
+    fs.createReadStream(filePath).pipe(res);
+  }
+});
+
+// Просмотр файла (без скачивания)
+app.get("/view-file/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File not found" });
+  }
+
+  const mimeType = getMimeType(filename);
+
+  res.setHeader("Content-Type", mimeType);
+  fs.createReadStream(filePath).pipe(res);
+});
+
+function getMimeType(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  const mimeTypes = {
+    ".pdf": "application/pdf",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".txt": "text/plain",
+    ".json": "application/json",
+  };
+  return mimeTypes[ext] || "application/octet-stream";
+}
+// files
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
