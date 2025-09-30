@@ -47,6 +47,47 @@ app.put("/put-multipart", upload.any(), (req, res) => {
 });
 // form data
 
+// application/json
+app.get("/get-json", (req, res) => {
+  res.json({
+    message: "Hello from GET!",
+    method: "GET",
+    timestamp: new Date().toISOString(),
+    data: { id: 1, name: "Test Item" },
+  });
+});
+
+app.post("/post-json", (req, res) => {
+  res.json({
+    message: "Data received successfully!",
+    method: "POST",
+    receivedData: req.body,
+    timestamp: new Date().toISOString(),
+    status: "success",
+  });
+});
+
+app.put("/put-json", (req, res) => {
+  res.json({
+    message: "Data updated successfully!",
+    method: "PUT",
+    updatedData: req.body,
+    timestamp: new Date().toISOString(),
+    id: req.params.id || 1,
+  });
+});
+
+app.delete("/delete-json", (req, res) => {
+  res.json({
+    message: "Item deleted successfully!",
+    method: "DELETE",
+    timestamp: new Date().toISOString(),
+    deletedId: req.params.id || 1,
+    status: "deleted",
+  });
+});
+// application/json
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
