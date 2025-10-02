@@ -25,8 +25,8 @@ if (!fs.existsSync("uploads")) {
 }
 
 // Для JSON и text/plain
-app.use(bodyParser.json());
-app.use(bodyParser.text());
+app.use(bodyParser.json({ type: "application/json" }));
+app.use(bodyParser.text({ type: "text/plain" }));
 app.use(express.urlencoded({ extended: true }));
 
 // application/text
