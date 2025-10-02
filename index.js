@@ -229,6 +229,61 @@ function getMimeType(filename) {
 }
 // files
 
+// Стриминг больших JSON данных
+app.get("/stream-large-json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.write("[");
+
+  // Генерируем большой JSON массив по частям
+  const itemsCount = 1000;
+
+  for (let i = 0; i < itemsCount; i++) {
+    const item = {
+      id: i + 1,
+      name: `Item ${i + 1}`,
+      timestamp: new Date().toISOString(),
+      data: Array(100).fill("x").join(""), // Имитация больших данных
+    };
+
+    res.write(JSON.stringify(item));
+
+    if (i < itemsCount - 1) {
+      res.write(",");
+    }
+
+    // Имитация задержки для демонстрации стриминга
+    if (i % 100 === 0) {
+      setTimeout(() => {}, 10);
+    }
+  }
+
+  res.write("]");
+  res.end();
+});
+
+// Чанковый стриминг текста
+app.get("/stream-text", (req, res) => {
+  res.setHeader("Content-Type", "text/plain");
+
+  const streamText = "Hello from streaming endpoint!\n".repeat(100);
+  const chunkSize = 100;
+
+  let position = 0;
+
+  const sendChunk = () => {
+    if (position < streamText.length) {
+      const chunk = streamText.slice(position, position + chunkSize);
+      res.write(chunk);
+      position += chunkSize;
+      setTimeout(sendChunk, 50); // Задержка между чанками
+    } else {
+      res.end();
+    }
+  };
+
+  sendChunk();
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
