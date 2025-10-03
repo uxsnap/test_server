@@ -235,14 +235,14 @@ app.get("/stream-large-json", (req, res) => {
   res.write("[");
 
   // Генерируем большой JSON массив по частям
-  const itemsCount = 1000;
+  const itemsCount = 100_000;
 
   for (let i = 0; i < itemsCount; i++) {
     const item = {
       id: i + 1,
       name: `Item ${i + 1}`,
       timestamp: new Date().toISOString(),
-      data: Array(100).fill("x").join(""), // Имитация больших данных
+      data: Array(1000).fill("x").join(""), // Имитация больших данных
     };
 
     res.write(JSON.stringify(item));
@@ -253,7 +253,7 @@ app.get("/stream-large-json", (req, res) => {
 
     // Имитация задержки для демонстрации стриминга
     if (i % 100 === 0) {
-      setTimeout(() => {}, 10);
+      setTimeout(() => {}, 100);
     }
   }
 
