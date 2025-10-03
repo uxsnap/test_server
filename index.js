@@ -235,7 +235,7 @@ app.get("/stream-large-json", (req, res) => {
   res.write("[");
 
   // Генерируем большой JSON массив по частям
-  const itemsCount = 100_000;
+  const itemsCount = 10_000;
 
   for (let i = 0; i < itemsCount; i++) {
     const item = {
