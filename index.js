@@ -232,6 +232,7 @@ function getMimeType(filename) {
 // Стриминг больших JSON данных
 app.get("/stream-large-json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Encoding", "identity");
   res.write("[");
 
   // Генерируем большой JSON массив по частям
