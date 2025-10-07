@@ -286,7 +286,7 @@ app.get("/stream-text", (req, res) => {
 });
 
 app.get("/download-500mb", (req, res) => {
-  const fileSize = 500 * 1024 * 1024;
+  const fileSize = 25 * 1024 * 1024;
   const chunkSize = 5 * 1024 * 1024; // 5MB chunks
 
   res.setHeader("Content-Type", "application/octet-stream");
