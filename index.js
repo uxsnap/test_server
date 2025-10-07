@@ -298,7 +298,28 @@ app.get("/download-500mb", (req, res) => {
 
   console.log("🚀 Starting 500MB file download...");
 
+  // Обработка закрытия соединения клиентом
+  req.on("close", () => {
+    isConnectionClosed = true;
+    console.log("❌ Client disconnected, stopping download");
+  });
+
+  req.on("error", (err) => {
+    isConnectionClosed = true;
+    console.log("❌ Connection error:", err.message);
+  });
+
+  res.on("error", (err) => {
+    isConnectionClosed = true;
+    console.log("❌ Response error:", err.message);
+  });
+
   const writeChunk = () => {
+    if (isConnectionClosed) {
+      console.log("🛑 Download stopped - connection closed");
+      return;
+    }
+
     if (sent >= fileSize) {
       res.end();
       console.log("✅ Download completed successfully!");
