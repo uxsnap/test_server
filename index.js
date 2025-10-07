@@ -285,6 +285,61 @@ app.get("/stream-text", (req, res) => {
   sendChunk();
 });
 
+app.get("/download-500mb", (req, res) => {
+  const fileSize = 500 * 1024 * 1024;
+  const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+
+  res.setHeader("Content-Type", "application/octet-stream");
+  res.setHeader("Content-Disposition", 'attachment; filename="500mb-file.bin"');
+  res.setHeader("Content-Length", fileSize.toString());
+
+  let sent = 0;
+  let chunkId = 0;
+
+  console.log("🚀 Starting 500MB file download...");
+
+  const writeChunk = () => {
+    if (sent >= fileSize) {
+      res.end();
+      console.log("✅ Download completed successfully!");
+      return;
+    }
+
+    const remaining = fileSize - sent;
+    const currentChunkSize = Math.min(chunkSize, remaining);
+
+    // Создаем chunk
+    const chunk = Buffer.alloc(currentChunkSize);
+    for (let i = 0; i < currentChunkSize; i++) {
+      chunk[i] = (chunkId + i) % 256;
+    }
+
+    // Проверяем backpressure
+    const canContinue = res.write(chunk);
+    sent += currentChunkSize;
+    chunkId++;
+
+    // Прогресс
+    if (sent % (50 * 1024 * 1024) === 0) {
+      const progress = ((sent / fileSize) * 100).toFixed(1);
+      console.log(`📦 ${progress}% (${sent / 1024 / 1024}MB)`);
+    }
+
+    if (sent < fileSize) {
+      if (canContinue) {
+        setImmediate(writeChunk);
+      } else {
+        // Ждем когда буфер очистится
+        res.once("drain", writeChunk);
+      }
+    } else {
+      res.end();
+    }
+  };
+
+  writeChunk();
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
