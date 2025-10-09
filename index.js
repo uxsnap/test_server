@@ -360,8 +360,8 @@ app.get("/stream-text", (req, res) => {
   sendChunk();
 });
 
-const FILE_SIZE = 25 * 1024 * 1024; // 25MB
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+const FILE_SIZE = 500 * 1024 * 1024; // 25MB
+const CHUNK_SIZE = 10 * 1024 * 1024; // 5MB
 
 app.get("/download-500mb", (req, res) => {
   res.setHeader("Content-Type", "application/octet-stream");
