@@ -371,12 +371,12 @@ app.get("/download-500mb", (req, res) => {
   let sent = 0;
   let isConnectionClosed = false;
 
-  console.log("🚀 Starting 500MB file download...");
+  console.log("🚀 Starting 25MB file download...");
 
-  req.on("close", () => {
-    isConnectionClosed = true;
-    console.log("❌ Client disconnected, stopping download");
-  });
+  // req.on("close", () => {
+  //   isConnectionClosed = true;
+  //   console.log("❌ Client disconnected, stopping download");
+  // });
 
   req.on("error", (err) => {
     isConnectionClosed = true;
