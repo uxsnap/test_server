@@ -360,8 +360,8 @@ app.get("/stream-text", (req, res) => {
   sendChunk();
 });
 
-const FILE_SIZE = 25 * 1024 * 1024;
-const CHUNK_SIZE = 5 * 1024 * 1024;
+const FILE_SIZE = 25 * 1024 * 1024; // 25MB
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
 app.get("/download-500mb", (req, res) => {
   res.setHeader("Content-Type", "application/octet-stream");
@@ -373,37 +373,31 @@ app.get("/download-500mb", (req, res) => {
 
   console.log("🚀 Starting 25MB file download...");
 
-  // req.on("close", () => {
-  //   isConnectionClosed = true;
-  //   console.log("❌ Client disconnected, stopping download");
-  // });
-
   req.on("error", (err) => {
     isConnectionClosed = true;
-    console.log("❌ Connection error:", err.message);
+    console.log("❌ Request error:", err.message);
   });
 
-  res.on("error", (err) => {
+  res.on("close", () => {
     isConnectionClosed = true;
-    console.log("❌ Response error:", err.message);
+    console.log("🛑 Connection closed by client");
+  });
+
+  res.on("finish", () => {
+    if (!isConnectionClosed) {
+      console.log("✅ Download completed successfully!");
+    }
   });
 
   const writeChunk = () => {
-    if (isConnectionClosed) {
-      console.log("🛑 Download stopped - connection closed");
-      return;
-    }
-
-    if (sent >= FILE_SIZE) {
-      res.end();
-      console.log("✅ Download completed successfully!");
-      return;
-    }
+    if (isConnectionClosed) return;
 
     const remaining = FILE_SIZE - sent;
-    const currentChunkSize = Math.min(CHUNK_SIZE, remaining);
+    if (remaining <= 0) return;
 
+    const currentChunkSize = Math.min(CHUNK_SIZE, remaining);
     const chunk = Buffer.alloc(currentChunkSize);
+
     for (let i = 0; i < currentChunkSize; i++) {
       chunk[i] = (sent + i) % 256;
     }
@@ -411,10 +405,7 @@ app.get("/download-500mb", (req, res) => {
     const canContinue = res.write(chunk);
     sent += currentChunkSize;
 
-    if (sent % CHUNK_SIZE === 0) {
-      const progress = ((sent / FILE_SIZE) * 100).toFixed(1);
-      console.log(`📦 ${progress}% (${sent / 1024 / 1024}MB)`);
-    }
+    console.log(`📦 Sent ${Math.round(sent / 1024 / 1024)}MB`);
 
     if (sent < FILE_SIZE) {
       if (canContinue) {
