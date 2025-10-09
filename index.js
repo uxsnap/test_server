@@ -360,13 +360,13 @@ app.get("/stream-text", (req, res) => {
   sendChunk();
 });
 
-app.get("/download-500mb", (req, res) => {
-  const fileSize = 25 * 1024 * 1024;
-  const chunkSize = 5 * 1024 * 1024;
+const FILE_SIZE = 25 * 1024 * 1024;
+const CHUNK_SIZE = 5 * 1024 * 1024;
 
+app.get("/download-500mb", (req, res) => {
   res.setHeader("Content-Type", "application/octet-stream");
   res.setHeader("Content-Disposition", 'attachment; filename="500mb-file.bin"');
-  res.setHeader("Content-Length", fileSize.toString());
+  res.setHeader("Content-Length", FILE_SIZE.toString());
 
   let sent = 0;
   let isConnectionClosed = false;
@@ -394,14 +394,14 @@ app.get("/download-500mb", (req, res) => {
       return;
     }
 
-    if (sent >= fileSize) {
+    if (sent >= FILE_SIZE) {
       res.end();
       console.log("✅ Download completed successfully!");
       return;
     }
 
-    const remaining = fileSize - sent;
-    const currentChunkSize = Math.min(chunkSize, remaining);
+    const remaining = FILE_SIZE - sent;
+    const currentChunkSize = Math.min(CHUNK_SIZE, remaining);
 
     const chunk = Buffer.alloc(currentChunkSize);
     for (let i = 0; i < currentChunkSize; i++) {
@@ -411,12 +411,12 @@ app.get("/download-500mb", (req, res) => {
     const canContinue = res.write(chunk);
     sent += currentChunkSize;
 
-    if (sent % (50 * 1024 * 1024) === 0) {
-      const progress = ((sent / fileSize) * 100).toFixed(1);
+    if (sent % FILE_SIZE === 0) {
+      const progress = ((sent / FILE_SIZE) * 100).toFixed(1);
       console.log(`📦 ${progress}% (${sent / 1024 / 1024}MB)`);
     }
 
-    if (sent < fileSize) {
+    if (sent < FILE_SIZE) {
       if (canContinue) {
         setImmediate(writeChunk);
       } else {
