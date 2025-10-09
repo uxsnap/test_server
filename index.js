@@ -411,7 +411,7 @@ app.get("/download-500mb", (req, res) => {
     const canContinue = res.write(chunk);
     sent += currentChunkSize;
 
-    if (sent % FILE_SIZE === 0) {
+    if (sent % CHUNK_SIZE === 0) {
       const progress = ((sent / FILE_SIZE) * 100).toFixed(1);
       console.log(`📦 ${progress}% (${sent / 1024 / 1024}MB)`);
     }
