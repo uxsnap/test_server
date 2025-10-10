@@ -92,7 +92,7 @@ const handleMultipart = (req, res, next) => {
 // Используем наш multipart обработчик
 app.use(handleMultipart);
 
-app.middleware((req, res, next) => {
+app.use((req, res, next) => {
   console.log(req.headers);
   next();
 });
