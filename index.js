@@ -94,6 +94,8 @@ app.use(handleMultipart);
 
 // application/text
 app.get("/get-text", (req, res) => {
+  console.log(req.headers);
+
   res.type("text/plain").send("Hello from GET!");
 });
 
