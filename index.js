@@ -92,10 +92,13 @@ const handleMultipart = (req, res, next) => {
 // Используем наш multipart обработчик
 app.use(handleMultipart);
 
+app.middleware((req, res, next) => {
+  console.log(req.headers);
+  next();
+});
+
 // application/text
 app.get("/get-text", (req, res) => {
-  console.log(req.headers);
-
   res.type("text/plain").send("Hello from GET!");
 });
 
